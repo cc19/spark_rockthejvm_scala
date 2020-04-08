@@ -1,0 +1,17 @@
+Course I - Data Toolkit:
+Start from the basics and understand statistical tools like SQL, Python, Statistics. Learn with an industry project & case study to strengthen your concepts.
+
+Course II - Machine Learning:
+Understand the relevance and power of prediction across industry verticals. By the end of the course, you will have an actionable knowledge of different machine learning algorithms and their applications.
+
+Post Course II, choose from 1 of the 5 specialisations offered as per your background and career aspirations:
+
+Specialisation I: Natural Language Processing
+
+Specialisation II: Deep Learning
+
+Specialisation III: Business Analytics
+
+Specialisation IV: Business Intelligence/ Data Analytics
+
+Specialisation V: Data Engineering
