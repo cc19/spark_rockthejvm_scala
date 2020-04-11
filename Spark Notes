@@ -81,6 +81,16 @@ Non-nullable column doesnot mean that the column will not have null values ever.
 - These are marker for Spark to optimize for nulls
 - Can lead to exceptions or data errors, if broken
 
+Datasets:
+Typed dataframes : distributed collection of jvm objects
+Most useful when:
+- we want to maintain type Information
+- we want clean concise code
+- our filters/transfomrations are hard to express in DF or SQL
+Avoid when:
+- performance is critical: Spark cannot optimize transfomrations
+
+
 
 SPARK SQL
 ----------
