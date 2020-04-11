@@ -1,3 +1,7 @@
+Starting:
+Move to spark cluster column and run:
+docker-compose up --scale spark-worker=3
+
 SPARK Structured API: DataFrames
 ---------------------------------
 
@@ -48,6 +52,35 @@ To process malformed records as null result, try setting the option 'mode' as 'P
 Parquet:
 An Open source compressed binary data storage format, optized for fast reading of columns. It is the default storage format for DFs as it works very well with Spark.
 It is very predictable, so we donot need so many options as we need in json or csv.
+
+NB. Scala provides a helper class, called App, that provides the main method. 
+Instead of writing your own main method, classes can extend the App class to produce concise and executable applications in Scala.
+App is a trait which is utilized to rapidly change objects into feasible programs, which is carried out by applying DelayedInit function and the objects 
+inheriting the trait App uses this function to execute the entire body of the program as a section of an inherited main method.
+
+# Columns and expressions
+DataFrames are actually split in partitions in between nodes in the clusters. So when we select 2 columns or any number of columns from a data frame, 
+those columns get selected on every partition on every node where the data frame resides.
+After select, we will obtain a new data frame with those 2 columns that we wanted and that will be reflected on every node in the cluster.
+This is called narrow transformation. 
+That means every input partition in the original dataframe has exactly one corresponding output partition in the resulting dataframe.
+
+#EXPRESSIONS are a powerful construct and will alow us to process data frames in almost any fashion we like.
+
+Wide Transformations:
+One or more input partitions contribute to one or more output partitions.
+Shuffles: Data is being moved in between different nodes in a Spark cluster. Shuffling is an expensive operation.
+If you have data pipelines that you want to be really fast, it is best to do data aggregations and grouping at the end of the processing.
+Joins are wide transfomrations (i.e expensive).
+
+Managing nulls:
+
+Managing the absence of data.
+Non-nullable column doesnot mean that the column will not have null values ever.
+- It is not a constraint
+- These are marker for Spark to optimize for nulls
+- Can lead to exceptions or data errors, if broken
+
 
 SPARK SQL
 ----------
@@ -186,17 +219,3 @@ Time taken: 0.074 seconds, Fetched 18 row(s)
 
 The 5 files are created for the 5 rows inserted in the table. 
 The table type is mentioned as EXTERNAL.
-
-NB. Scala provides a helper class, called App, that provides the main method. 
-Instead of writing your own main method, classes can extend the App class to produce concise and executable applications in Scala.
-App is a trait which is utilized to rapidly change objects into feasible programs, which is carried out by applying DelayedInit function and the objects 
-inheriting the trait App uses this function to execute the entire body of the program as a section of an inherited main method.
-
-# Columns and expressions
-DataFrames are actually split in partitions in between nodes in the clusters. So when we select 2 columns or any number of columns from a data frame, 
-those columns get selected on every partition on every node where the data frame resides.
-After select, we will obtain a new data frame with those 2 columns that we wanted and that will be reflected on every node in the cluster.
-This is called narrow transformation. 
-That means every input partition in the original dataframe has exactly one corresponding output partition in the resulting dataframe.
-
-#EXPRESSIONS are apowerful construct and will alow us to process data frames in almost any fashion we like.
