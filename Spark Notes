@@ -73,7 +73,7 @@ Shuffles: Data is being moved in between different nodes in a Spark cluster. Shu
 If you have data pipelines that you want to be really fast, it is best to do data aggregations and grouping at the end of the processing.
 Joins are wide transfomrations (i.e expensive).
 
-Managing nulls:
+#Managing nulls:
 
 Managing the absence of data.
 Non-nullable column doesnot mean that the column will not have null values ever.
@@ -89,6 +89,10 @@ Most useful when:
 - our filters/transfomrations are hard to express in DF or SQL
 Avoid when:
 - performance is critical: Spark cannot optimize transfomrations
+N.B. All dataset has access to all DF functions
+
+#RDD : Resilient Distributed Datasets
+
 
 
 

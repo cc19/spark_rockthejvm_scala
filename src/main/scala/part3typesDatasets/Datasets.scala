@@ -1,6 +1,6 @@
 package part3typesDatasets
 
-import org.apache.spark.sql.{SparkSession, Dataset, Encoders}
+import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 import java.sql.Date
 
 object Datasets extends App{
@@ -55,6 +55,30 @@ object Datasets extends App{
   val carNameDS = carsDS.map(
     car => car.Name.toUpperCase()
   )
+
+
+  //JOINS
+  case class Guitar(id:Long, make:String, model:String, guitarType:String)
+  case class GuitarPlayers(id:Long, name:String, guitars:Seq[Long], band:Long)
+  case class bands(id:Long, name:String, hometown:String, bandYear:Long)
+
+  val bandsDS = readDF("bands.json").as[bands]
+  val guitarPlayersDS = readDF("guitarPlayers.json").as[GuitarPlayers]
+  val guitarsDS = readDF("guitars.json").as[Guitar]
+
+  //join method returns a DF while join with returns Dataset
+  val guitarPlayerBands:Dataset[(GuitarPlayers, bands)]=guitarPlayersDS.joinWith(bandsDS, guitarPlayersDS.col("band")===bandsDS.col("id"))
+  guitarPlayerBands.withColumnRenamed("_1","Guitar Players")
+                   .withColumnRenamed("_2","Bands")
+
+
+  //Grouping datasets
+  //Group cars as per their origin
+  carsDS.groupByKey(_.Origin).count()
+
+  /*joins and groups are wide transformations i.e. they change the no. of partitions (involve shuffle operation)
+  which is expensive since data moves between nodes
+   */
 
 
 
