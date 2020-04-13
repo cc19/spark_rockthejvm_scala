@@ -206,3 +206,8 @@ spark-warehouse/
 
 #vscode
 .metals
+
+
+#cc ++
+src/main/resources/data/stocks30
+src/main/resources/data/stocks15
