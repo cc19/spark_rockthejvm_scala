@@ -91,9 +91,6 @@ Avoid when:
 - performance is critical: Spark cannot optimize transfomrations
 N.B. All dataset has access to all DF functions
 
-#RDD : Resilient Distributed Datasets
-
-
 
 
 SPARK SQL
@@ -233,3 +230,75 @@ Time taken: 0.074 seconds, Fetched 18 row(s)
 
 The 5 files are created for the 5 rows inserted in the table. 
 The table type is mentioned as EXTERNAL.
+
+
+#RDD : Resilient Distributed Datasets
+Distributed typed collection of JVM objects.
+All higher level APIs get reduced to RDDs.
+Whenever we run a DF or DS transformation, before Spark runs any code, it computes a plan to process these RDDs behind the scenes. 
+So RDDs are the essential building blocks of Big Data.
+RDDs are the ones that are acyually partitioned.
+Pros: can be highly optimized
+- We can control how they are partitioned (not possible for DF or DS)
+- order of elements can be controlled
+- order of operations because it matters for performance
+Cons: Hard to work with
+- for complex operations, need to know the internals of spark
+- poor APIs for quick data processing
+
+For 99% of operations, use DF or DS.
+If we need to fine tune performance of operations on the distributed data, we should use RDDs.
+
+RDD vs Dataset:
+
+DataFrame = DataSet[Rows]
+
+In common:
+- collection API: map, flatMap, reduce,filter, take, etc
+- union, count, distinct
+- group by, sort by
+
+RDDs over Datasets:
+- partition control: repartition, coalesce, partitioner, zipPartitions, mapPartitions
+- operation control: checkpoint, isCheckpointed, localCheckpoint, cache
+- storage control: cache, getStorageLevel, persist
+
+Datasets over RDDs:
+- select nad Joins
+- Spark planning and optimization before running code. Spark can optimize the selects and joins without requiring us to do anything.
+For 99% of operations, use DF or DS.
+
+Summary of RDD:
+- Turn a regular collection into RDD
+val sc=spark.sparkContext
+val numbersRDD = sc.parallelize(regularCollection)
+
+- Read RDD from file
+val numbersRDD = sc.textfile("path/to/your/file").map(...)
+
+- Dataset to RDD
+val stocksRDD = stocksDS.rdd
+
+- RDD to high-level
+val stocksDF = stocksRDD.toDF("symbol","date","price")
+val stocksDS = spark.createDataset(stocksRDD)
+
+- RDD vs DS
+
+#RDD
+- Collection transfomrations: map, flatMap, filter
+stocksRDD.map(_.price)
+
+- Actions: count, min, reduce
+stocksRDD.min       //needs implcit ordering
+
+- Grouping
+stocksRDD.groupBy(_.symbol)
+Returns an RDD of a tuple between key and a iterable of the type we have the RDD
+Involves Shuffling, so expensive
+
+- Partitioning
+stocksRDD.repartition(30)   //reshuffling
+repartitionedStocksRDD.coalesce(15)
+coalesce is not a full shuffle and only reduces the number of partitions
+
