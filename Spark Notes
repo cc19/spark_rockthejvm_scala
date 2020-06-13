@@ -2,6 +2,19 @@ Starting:
 Move to spark cluster column and run:
 docker-compose up --scale spark-worker=3
 
+- builder()
+Creates a SparkSession.Builder for constructing a SparkSession.
+
+- Use the builder to get an existing session:
+   SparkSession.builder().getOrCreate()
+ 
+The builder can also be used to create a new session:
+   SparkSession.builder
+     .master("local")
+     .appName("Word Count")
+     .config("spark.some.config.option", "some-value")
+     .getOrCreate()
+
 SPARK Structured API: DataFrames
 ---------------------------------
 
@@ -24,8 +37,8 @@ Dataframes
     - if you want to modify them, then create new DFs via transformations
 
 - Transformations
-    - narrow transformation : one input partition contributes to at most one output partition (e.g map)
-    - wide transformation : one or more input partition create many output partitions (e.g. sort)
+    - narrow transformation : one input partition contributes to at most one output partition (e.g map). Transformation is done on data that are present in a single node.
+    - wide transformation : one or more input partition create many output partitions (e.g. sort). Transformation requires data to be moved around multiple nodes.
 
 Shuffle -> Data exchange between cluster nodes
 - occurs in wide Transformations
@@ -72,6 +85,9 @@ One or more input partitions contribute to one or more output partitions.
 Shuffles: Data is being moved in between different nodes in a Spark cluster. Shuffling is an expensive operation.
 If you have data pipelines that you want to be really fast, it is best to do data aggregations and grouping at the end of the processing.
 Joins are wide transfomrations (i.e expensive).
+
+Narrow transformation — doesn’t require the data to be shuffled across the partitions. for example, Map, filter etc.
+wide transformation — requires the data to be shuffled for example, reduceByKey etc.
 
 #Managing nulls:
 
@@ -233,6 +249,12 @@ The table type is mentioned as EXTERNAL.
 
 
 #RDD : Resilient Distributed Datasets
+
+RDD(Resilient,Distributed,Dataset) is immutable distributed collection of objects.
+RDD is a logical reference of a dataset which is partitioned across many server machines in the cluster. 
+RDDs are Immutable and are self recovered in case of failure.
+An RDD could come from any datasource, e.g. text files, a database via JDBC, etc.
+
 Distributed typed collection of JVM objects.
 All higher level APIs get reduced to RDDs.
 Whenever we run a DF or DS transformation, before Spark runs any code, it computes a plan to process these RDDs behind the scenes. 
@@ -264,7 +286,7 @@ RDDs over Datasets:
 - storage control: cache, getStorageLevel, persist
 
 Datasets over RDDs:
-- select nad Joins
+- select and Joins
 - Spark planning and optimization before running code. Spark can optimize the selects and joins without requiring us to do anything.
 For 99% of operations, use DF or DS.
 
@@ -302,3 +324,66 @@ stocksRDD.repartition(30)   //reshuffling
 repartitionedStocksRDD.coalesce(15)
 coalesce is not a full shuffle and only reduces the number of partitions
 
+Q. How Spark store the data?
+Spark is a processing engine, there is no storage engine. It can retrieve data from any storage engine like HDFS, S3 and other data resources.
+
+Q. What is SparkContext?
+Main entry point for Spark functionality. A SparkContext represents the connection to a Spark cluster, and can be used to create RDDs, accumulators and broadcast variables on that cluster.
+Only one SparkContext should be active per JVM. You must stop() the active SparkContext before creating a new one.
+A Spark Config object describes the application configuration. Any settings in this config overrides the default configs as well as system properties.
+>Constructors
+- SparkContext()
+Create a SparkContext that loads settings from system properties (for instance, when launching with ./bin/spark-submit).
+- SparkContext(SparkConf config) 
+- SparkContext(String master, String appName, SparkConf conf)
+Alternative constructor that allows setting common Spark properties directly
+- SparkContext(String master, String appName, String sparkHome, scala.collection.Seq<String> jars, scala.collection.Map<String,String> environment)
+Alternative constructor that allows setting common Spark properties directly
+
+Q. How SparkSQL is different from HQL and SQL?
+SparkSQL is a special component on the sparkCore engine that support SQL and HiveQueryLanguage without changing any syntax. It’s possible to join SQL table and HQL table.
+
+Q. What is Transformation in spark?
+Spark provides two special operations on RDDs called transformations and Actions. Transformation follows lazy operation and temporary hold the data until and unless called by the Action. 
+Each transformation generates/return new RDD. 
+Example of transformations: Map, flatMap, groupByKey, reduceByKey, filter, co-group, join, sortByKey, Union, distinct, sample are common spark transformations.
+
+Q. What is Action in Spark?
+Actions are RDD’s operation, that returns back values to the spark driver programs. Actions kick off a job to execute on a cluster. 
+Transformation’s output is an output of Actions. 
+Reduce, collect, takeSample, take, first, saveAsTextfile, saveAsSequenceFile, countByKey, foreach are common actions in Apache spark.
+
+**Q. What is RDD Lineage?
+Lineage is an RDD process to reconstruct lost partitions. 
+Spark does not replicate the data in memory, if data is lost.
+RDDs use linege to rebuild lost data. Each RDD remembers how the RDD build from other datasets.
+
+Q. What is Map and flatMap in Spark?
+Map and flatMap are similar, in the sense they take a line from the input RDD and apply a function on it. 
+The way they differ is that the function in map returns only one element, while function in flatMap can return a list of elements (0 or more) as an iterator.
+Also, the output of the flatMap is flattened. Although the function in flatMap returns a list of elements, the flatMap returns an RDD which has all the elements from the list 
+in a flat way (not a list).
+
+Difference:
+1. map(func) Return a new distributed dataset formed by passing each element of the source through a function func.
+flatMap(func) Similar to map, but each input item can be mapped to 0 or more output items (so func should return a Seq rather than a single item).
+
+2. The transformation function: map: One element in -> one element out. flatMap: One element in -> 0 or more elements out (a collection).
+
+**Example1:- ** sc.parallelize([3,4,5]).map(lambda x: range(1,x)).collect() 
+> Output: 1, 2], [1, 2, 3], [1, 2, 3, 4
+
+sc.parallelize([3,4,5]).flatMap(lambda x: range(1,x)).collect()
+> Output: ** notice o/p is flattened out in a single list
+[1, 2, 1, 2, 3, 1, 2, 3, 4] 
+
+We can do wordcount of file using flatMap.
+
+Q. What is an RDD?
+The full form of RDD is resilience distributed dataset. 
+It is a representation of data located on a network which is:
+- Immutable – You can operate on the rdd to produce another rdd but you can’t alter it.
+- Partitioned / Parallel – The data located on RDD is operated in parallel. Any operation on RDD is done using multiple nodes.
+- Resilience – If one of the node hosting the partition fails, another nodes takes its data.
+
+Q. 

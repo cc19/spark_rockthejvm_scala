@@ -23,7 +23,7 @@ object Aggregations extends App{
   moviesDF.select(countDistinct(col("Major_Genre")))
 
   //approx count
-  moviesDF.select(approx_count_distinct(col("Major_Genre")))   //for qiuck analysis of very big datasets
+  moviesDF.select(approx_count_distinct(col("Major_Genre")))   //for quick analysis of very big datasets
 
   //min and max
   val minRatingDF = moviesDF.select(min(col("IMDB_Rating")))
